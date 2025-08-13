@@ -64,12 +64,8 @@ fun CarListScreen(
                                     .fillMaxSize(),
                                 contentAlignment = Alignment.Center,
                             ) {
-                                AsyncImage(
-                                    model = selectedImage,
-                                    contentDescription = "Car image",
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .fillMaxHeight()
+                                CarImage(
+                                    imageUrl = selectedImage
                                 )
                             }
                         }
@@ -90,7 +86,7 @@ fun CarListScreen(
 
 
 @Composable
-private fun CarImage(modifier: Modifier = Modifier, imageUrl: String) {
+private fun CarImage(modifier: Modifier = Modifier, imageUrl: String?) {
     AsyncImage(
         modifier = modifier,
         model = imageUrl,
