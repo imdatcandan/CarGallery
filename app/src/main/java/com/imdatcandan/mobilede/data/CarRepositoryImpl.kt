@@ -1,9 +1,24 @@
 package com.imdatcandan.mobilede.data
 
-import com.imdatcandan.mobilede.data.model.Image
+import android.annotation.SuppressLint
+import android.os.Build
+import androidx.annotation.RequiresExtension
+import com.imdatcandan.mobilede.data.model.toDomain
+import com.imdatcandan.mobilede.domain.CarImage
+import retrofit2.HttpException
+import java.io.IOException
 
-class CarRepositoryImpl(private val carApiService: CarApiService) : CarRepository {
-    override suspend fun getCarDetails(): List<Image> {
-        return carApiService.getCarDetails("285041801").images
+class CarRepositoryImpl(
+    private val api: CarApiService
+) : CarRepository {
+    override suspend fun getCarImages(carId: String): List<CarImage> {
+        try {
+            val response = api.getCarDetails(carId)
+            return response.images.map { it.toDomain() }
+        } catch (e: IOException) {
+            throw NetworkException("Network error", e)
+        } catch (e: HttpException) {
+            throw ApiException("API error ${e.code()}", e)
+        }
     }
 }

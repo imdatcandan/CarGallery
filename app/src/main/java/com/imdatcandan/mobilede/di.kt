@@ -3,7 +3,9 @@ package com.imdatcandan.mobilede
 import com.imdatcandan.mobilede.data.CarRepository
 import com.imdatcandan.mobilede.data.CarRepositoryImpl
 import com.imdatcandan.mobilede.data.CarApiService
-import com.imdatcandan.mobilede.view.CarListViewModel
+import com.imdatcandan.mobilede.domain.GetCarImagesUseCase
+import com.imdatcandan.mobilede.domain.GetCarImagesUseCaseImpl
+import com.imdatcandan.mobilede.presentation.CarListViewModel
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
@@ -21,6 +23,8 @@ val appModule = module {
 
     single<CarRepository> { CarRepositoryImpl(get()) }
 
+    single<GetCarImagesUseCase> { GetCarImagesUseCaseImpl(get()) }
+
     viewModel { CarListViewModel(get()) }
 
     single {
@@ -30,7 +34,7 @@ val appModule = module {
 
 
         Retrofit.Builder()
-            .baseUrl("https://m.mobile.de/")
+            .baseUrl("https://api.mobile.de/")
             .client(get())
             .addConverterFactory(json.asConverterFactory(contentType))
             .build()

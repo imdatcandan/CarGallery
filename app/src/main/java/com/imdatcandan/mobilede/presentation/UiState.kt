@@ -1,4 +1,4 @@
-package com.imdatcandan.mobilede.view
+package com.imdatcandan.mobilede.presentation
 
 sealed class UiState<out T> {
     object Loading : UiState<Nothing>()

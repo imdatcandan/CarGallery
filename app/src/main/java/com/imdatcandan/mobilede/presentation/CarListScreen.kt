@@ -1,13 +1,12 @@
-package com.imdatcandan.mobilede.view
+package com.imdatcandan.mobilede.presentation
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -48,9 +47,9 @@ fun CarListScreen(
                             CarImage(
                                 modifier = Modifier
                                     .clickable {
-                                        selectedImage = images[index].getLargeUrl()
+                                        selectedImage = images[index].largeUrl
                                     },
-                                imageUrl = images[index].getThumbnailUrl()
+                                imageUrl = images[index].thumbnailUrl
                             )
                         }
                     }
@@ -73,9 +72,18 @@ fun CarListScreen(
                 }
 
                 is UiState.Error -> {
-                    // Show error message
-                    val errorMessage = (state.value as UiState.Error).message
-                    Text(text = errorMessage)
+
+                    Column {
+                        // Show error message
+                        val errorMessage = (state.value as UiState.Error).message
+
+                        Text(text = errorMessage)
+                        // Trigger retry on button click
+                        Button(onClick = { viewModel.retry() }) {
+                            Text("Retry")
+                        }
+                    }
+
                 }
 
             }

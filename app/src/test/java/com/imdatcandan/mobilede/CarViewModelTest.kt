@@ -2,9 +2,12 @@ package com.imdatcandan.mobilede
 
 import app.cash.turbine.test
 import com.imdatcandan.mobilede.data.CarRepository
-import com.imdatcandan.mobilede.data.model.Image
-import com.imdatcandan.mobilede.view.CarListViewModel
-import com.imdatcandan.mobilede.view.UiState
+import com.imdatcandan.mobilede.domain.CarImage
+import com.imdatcandan.mobilede.domain.GetCarImagesUseCase
+import com.imdatcandan.mobilede.presentation.CarImageUi
+import com.imdatcandan.mobilede.presentation.CarListViewModel
+import com.imdatcandan.mobilede.presentation.UiState
+import com.imdatcandan.mobilede.presentation.toUi
 import io.mockk.coEvery
 import io.mockk.mockk
 import junit.framework.TestCase.assertEquals
@@ -17,61 +20,61 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import com.imdatcandan.mobilede.data.NetworkException
 
-@ExperimentalCoroutinesApi
-    class CarListViewModelTest {
+@OptIn(ExperimentalCoroutinesApi::class)
+class CarListViewModelTest {
 
-        private val testDispatcher = StandardTestDispatcher()
+    private lateinit var getCarImagesUseCase: GetCarImagesUseCase
+    private lateinit var viewModel: CarListViewModel
 
-        private lateinit var carRepository: CarRepository
-        private lateinit var viewModel: CarListViewModel
+    private val testDispatcher = StandardTestDispatcher()
 
-        @Before
-        fun setup() {
-            Dispatchers.setMain(testDispatcher)
-            carRepository = mockk()
-        }
+    @Before
+    fun setup() {
+        Dispatchers.setMain(testDispatcher)
+        getCarImagesUseCase = mockk()
+    }
 
-        @After
-        fun tearDown() {
-            Dispatchers.resetMain()
-        }
+    @Test
+    fun `state emits Success when use case returns images`() = runTest {
+        val carImages = listOf(
+            CarImage( "url1"),
+            CarImage( "url2")
+        )
 
-        @Test
-        fun `state emits Loading then Success`() = runTest {
-            // Arrange
-            val images = listOf(
-                Image("img1"),
-                Image("img2")
-            )
-            coEvery { carRepository.getCarDetails() } returns images
+        coEvery { getCarImagesUseCase.invoke(any())} returns (Result.success(carImages))
 
-            // Act
-            viewModel = CarListViewModel(carRepository)
+        viewModel = CarListViewModel(getCarImagesUseCase)
 
-            // Assert
-            viewModel.state.test {
-                assertEquals(UiState.Loading, awaitItem())
-                assertEquals(UiState.Success(images), awaitItem())
-                cancelAndIgnoreRemainingEvents()
-            }
-        }
-
-        @Test
-        fun `state emits Loading then Error`() = runTest {
-            // Arrange
-            coEvery { carRepository.getCarDetails() } throws RuntimeException("Network failed")
-
-            // Act
-            viewModel = CarListViewModel(carRepository)
-
-            // Assert
-            viewModel.state.test {
-                assertEquals(UiState.Loading, awaitItem())
-                val errorState = awaitItem()
-                assert(errorState is UiState.Error)
-                assertEquals("Network failed", (errorState as UiState.Error).message)
-                cancelAndIgnoreRemainingEvents()
-            }
+        viewModel.state.test {
+            assertEquals(UiState.Loading, awaitItem())
+            val successState = awaitItem()
+            assert(successState is UiState.Success)
+            val images = (successState as UiState.Success).data
+            assertEquals(2, images.size)
+            cancelAndIgnoreRemainingEvents()
         }
     }
+
+    @Test
+    fun `state emits Error when use case returns failure`() = runTest {
+        val exception = NetworkException("No internet")
+        coEvery { getCarImagesUseCase.invoke(any())} returns (Result.failure(exception))
+
+        viewModel = CarListViewModel(getCarImagesUseCase)
+
+        viewModel.state.test {
+            assertEquals(UiState.Loading, awaitItem())
+            val errorState = awaitItem()
+            assert(errorState is UiState.Error)
+            assertEquals("Network error, please try again.", (errorState as UiState.Error).message)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @After
+    fun tearDown() {
+        Dispatchers.resetMain()
+    }
+}

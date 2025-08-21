@@ -1,7 +1,7 @@
 package com.imdatcandan.mobilede.data
 
-import com.imdatcandan.mobilede.data.model.Image
+import com.imdatcandan.mobilede.domain.CarImage
 
 interface CarRepository {
-    suspend fun getCarDetails(): List<Image>
+    suspend fun getCarImages(carId: String): List<CarImage>
 }
