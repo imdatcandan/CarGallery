@@ -1,8 +1,5 @@
 package com.imdatcandan.mobilede.data
 
-import android.annotation.SuppressLint
-import android.os.Build
-import androidx.annotation.RequiresExtension
 import com.imdatcandan.mobilede.data.model.toDomain
 import com.imdatcandan.mobilede.domain.CarImage
 import retrofit2.HttpException

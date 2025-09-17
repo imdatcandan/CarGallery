@@ -1,13 +1,10 @@
 package com.imdatcandan.mobilede
 
 import app.cash.turbine.test
-import com.imdatcandan.mobilede.data.CarRepository
 import com.imdatcandan.mobilede.domain.CarImage
 import com.imdatcandan.mobilede.domain.GetCarImagesUseCase
-import com.imdatcandan.mobilede.presentation.CarImageUi
 import com.imdatcandan.mobilede.presentation.CarListViewModel
 import com.imdatcandan.mobilede.presentation.UiState
-import com.imdatcandan.mobilede.presentation.toUi
 import io.mockk.coEvery
 import io.mockk.mockk
 import junit.framework.TestCase.assertEquals
@@ -21,6 +18,9 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import com.imdatcandan.mobilede.data.NetworkException
+import com.imdatcandan.mobilede.presentation.ErrorMapper
+import com.imdatcandan.mobilede.presentation.UiError
+import io.mockk.every
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class CarListViewModelTest {
@@ -45,7 +45,7 @@ class CarListViewModelTest {
 
         coEvery { getCarImagesUseCase.invoke(any())} returns (Result.success(carImages))
 
-        viewModel = CarListViewModel(getCarImagesUseCase)
+        viewModel = CarListViewModel(getCarImagesUseCase, errorMapper = mockk())
 
         viewModel.state.test {
             assertEquals(UiState.Loading, awaitItem())
@@ -62,7 +62,9 @@ class CarListViewModelTest {
         val exception = NetworkException("No internet")
         coEvery { getCarImagesUseCase.invoke(any())} returns (Result.failure(exception))
 
-        viewModel = CarListViewModel(getCarImagesUseCase)
+        viewModel = CarListViewModel(getCarImagesUseCase, errorMapper =mockk<ErrorMapper> {
+            every { map(any()) } returns UiError.Network
+        })
 
         viewModel.state.test {
             assertEquals(UiState.Loading, awaitItem())
